@@ -1,0 +1,37 @@
+.video-carousel {
+  .layer-container {
+    display: grid;
+
+    .top-layer,
+    .bottom-layer {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .bottom-layer {
+      pointer-events: none;
+    }
+  }
+
+  .video-players {
+    display: grid;
+    width: 100vw;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-areas: "previous current next";
+    /* gap: 1em; */
+    user-select: none;
+    will-change: translate;
+    & > div {
+      border: red 1px solid;
+    }
+    &.previous {
+      grid-area: previous;
+    }
+    &.current {
+      grid-area: current;
+    }
+    &.next {
+      grid-area: next;
+    }
+  }
+}
