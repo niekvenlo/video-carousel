@@ -34,7 +34,7 @@ export function Welcome() {
     <main>
       <VideoCarousel
         loadVideoByIndex={(index, video) => {
-          video.src = `/nato/${tracks[index]}.MP4`;
+          video.src = `/nato/${tracks.at(index)}.MP4`;
         }}
       />
     </main>

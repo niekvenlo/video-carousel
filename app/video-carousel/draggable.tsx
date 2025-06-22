@@ -25,7 +25,11 @@ function Draggable({
           ts.current = Date.now();
           onDragStart();
         }}
-        onDragEnd={onDragEnd}
+        onDragEnd={(e) => {
+          const x = e.pageX - xOffset.current!;
+          const dx = Math.round((10 * x) / (Date.now() - ts.current)) / 10;
+          onDragEnd({ x, dx });
+        }}
         onDragOver={(e) => {
           const x = e.pageX - xOffset.current!;
           const dx = Math.round((10 * x) / (Date.now() - ts.current)) / 10;

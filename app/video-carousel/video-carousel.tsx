@@ -5,60 +5,85 @@ import "./video-carousel.css";
 
 type Props = {
   loadVideoByIndex: (index: number, video: HTMLVideoElement) => void;
-  index?: number;
+  startIndex?: number;
 };
 
-const SNAP_DISTANCE = 200;
-function VideoCarousel({ loadVideoByIndex, index = 0 }: Props) {
-  useEffect(() => {
-    loadVideoByIndex(index, videoRef1.current!);
-    loadVideoByIndex(index + 1, videoRef2.current!);
-    loadVideoByIndex(index + 2, videoRef3.current!);
-    setIdx(index);
-  }, [loadVideoByIndex, index]);
-
-  const [idx, setIdx] = useState(index);
-
+function VideoCarousel({ loadVideoByIndex, startIndex = 0 }: Props) {
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  // We define a total of three video components.
   const videoRef1 = useRef<HTMLVideoElement>(null);
   const videoRef2 = useRef<HTMLVideoElement>(null);
   const videoRef3 = useRef<HTMLVideoElement>(null);
+  const videoRefs = [videoRef1, videoRef2, videoRef3];
 
-  const handleUserInteraction = () => {
-    videoRef1.current?.play();
-    videoRef2.current?.play();
-    videoRef2.current?.pause();
-    videoRef3.current?.play();
-    videoRef3.current?.pause();
-  };
-  const [isDragging, setIsDragging] = useState(false);
-  const [xOffset, setXOffset] = useState(0);
-  const handleDrag = ({ x, dx }: { x: number; dx: number }) => {
-    if (!isDragging) {
+  const [idx, setIdx] = useState(startIndex);
+  const playerOrderingClass = ["uno", "dos", "tres"][idx % 3];
+
+  useEffect(() => {
+    // On mount, we initialise three videos using `loadVideoByIndex`
+    loadVideoByIndex(idx - 1, videoRef1.current!);
+    loadVideoByIndex(idx, videoRef2.current!);
+    loadVideoByIndex(idx + 1, videoRef3.current!);
+    setIdx(startIndex);
+  }, [loadVideoByIndex, startIndex]);
+
+  useEffect(() => {
+    if (!hasUserInteracted) {
       return;
     }
-    const slideThreshold =
-      (videoRef1.current?.getBoundingClientRect().width ?? 200) / 2;
-    const SWIPE_THRESHOLD = 0.5;
-    if (dx < -SWIPE_THRESHOLD) {
+    // Whenever idx changes, we move our attention to a different video.
+    // We cancel any dragging, and move the players back to their initial location.
+    setIsDragging(false);
+    setXOffset(0);
+    // And we play the video that is now front-and-center
+    playVideoAtCurrentIndex();
+    // loadVideoByIndex(idx + 1, videoRef3.current!);
+  }, [idx]);
+
+  const playVideoAtCurrentIndex = () => {
+    if (videoRefs.some((ref) => !ref.current)) {
+      return;
+    }
+    videoRefs.forEach((ref) => ref.current?.pause());
+    const playIndex = (idx + 1) % 3;
+    videoRefs[playIndex].current?.play();
+  };
+
+  const handleUserInteraction = () => {
+    if (hasUserInteracted) {
+      return;
+    }
+    // We capture a single user interaction to trigger all three video components.
+    // This initialises the players so we can later trigger them with code.
+    videoRefs.forEach((ref) => ref.current?.play());
+    videoRefs.forEach((ref) => ref.current?.pause());
+    playVideoAtCurrentIndex();
+    setHasUserInteracted(true);
+  };
+  const slideThreshold =
+    (videoRef1.current?.getBoundingClientRect().width ?? 200) / 2;
+  const swipeThreshold = 0.5;
+  const [isDragging, setIsDragging] = useState(false);
+  const [xOffset, setXOffset] = useState(0);
+  const handleDragEnd = ({ x, dx }: { x: number; dx: number }) => {
+    if (dx < -swipeThreshold) {
       // Handle quick swipe left
       setIdx(idx + 1);
-      setIsDragging(false);
-      setXOffset(0);
-    } else if (dx > SWIPE_THRESHOLD) {
+    } else if (dx > swipeThreshold) {
       // Handle quick swipe right
       setIdx(idx - 1);
-      setIsDragging(false);
-      setXOffset(0);
-    } else if (x > slideThreshold || x < -slideThreshold) {
-      if (x > 0) {
-        setIdx(idx - 1);
-      } else {
-        setIdx(idx + 1);
-      }
-      setIsDragging(false);
-      setXOffset(0);
+    } else if (x > slideThreshold) {
+      setIdx(idx - 1);
+    } else if (x < -slideThreshold) {
+      setIdx(idx + 1);
     } else {
       setXOffset(x);
+    }
+  };
+  const handleDrag = ({ x }: { x: number }) => {
+    if (isDragging) {
+      setXOffset(x);
+      return;
     }
   };
   const throttledHandleDrag = throttle(handleDrag);
@@ -66,18 +91,16 @@ function VideoCarousel({ loadVideoByIndex, index = 0 }: Props) {
   return (
     <div className="video-carousel">
       <Draggable
-        onDragStart={() => setIsDragging(true)}
-        onDragEnd={() => setIsDragging(false)}
+        onDragStart={() => {
+          handleUserInteraction();
+          setIsDragging(true);
+        }}
+        onDragEnd={handleDragEnd}
         onDrag={throttledHandleDrag}
         onClick={handleUserInteraction}
       >
         <div
-          className={cx("video-players", {
-            uno: idx % 3 === 0,
-            dos: idx % 3 === 1,
-            tres: idx % 3 === 2,
-            [`num-${idx}`]: true,
-          })}
+          className={cx("video-players", playerOrderingClass)}
           style={{ translate: `${xOffset}px` }}
         >
           <div className="giraffe">
