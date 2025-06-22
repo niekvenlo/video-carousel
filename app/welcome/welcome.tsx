@@ -30,21 +30,11 @@ export function Welcome() {
     `Zulu`,
   ];
 
-  const index = useRef(0);
-
   return (
     <main>
       <VideoCarousel
-        loadCurrent={(video: HTMLVideoElement) => {
-          video.src = `/nato/${tracks[index.current]}.MP4`;
-        }}
-        loadNext={(video: HTMLVideoElement) => {
-          index.current++;
-          video.src = `/nato/${tracks[index.current]}.MP4`;
-        }}
-        loadPrevious={(video: HTMLVideoElement) => {
-          index.current--;
-          video.src = `/nato/${tracks[index.current]}.MP4`;
+        loadVideoByIndex={(index, video) => {
+          video.src = `/nato/${tracks[index]}.MP4`;
         }}
       />
     </main>

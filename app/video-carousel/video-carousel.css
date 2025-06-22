@@ -17,21 +17,29 @@
     display: grid;
     width: 100vw;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-template-areas: "previous current next";
-    /* gap: 1em; */
+    &.uno {
+      grid-template-areas: "giraffe elephant zebra";
+    }
+    &.dos {
+      grid-template-areas: "elephant zebra giraffe";
+    }
+    &.tres {
+      grid-template-areas: "zebra giraffe elephant";
+    }
+
     user-select: none;
     will-change: translate;
     & > div {
       border: red 1px solid;
     }
-    &.previous {
-      grid-area: previous;
+    .elephant {
+      grid-area: elephant;
     }
-    &.current {
-      grid-area: current;
+    .zebra {
+      grid-area: zebra;
     }
-    &.next {
-      grid-area: next;
+    .giraffe {
+      grid-area: giraffe;
     }
   }
 }
