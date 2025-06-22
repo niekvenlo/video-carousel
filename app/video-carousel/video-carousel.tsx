@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import Draggable from "./draggable";
 import usePrevious from "./hooks/use-previous";
 import { cx, throttle } from "./utils";
@@ -11,17 +17,13 @@ type Props = {
   style?: CSSProperties;
 };
 
-function VideoCarousel({
-  className,
-  loadVideoByIndex,
-  startIndex = 0,
-  style,
-}: Props) {
+function VideoCarousel(
+  { className, loadVideoByIndex, startIndex = 0, style }: Props,
+  ref: React.Ref<HTMLDivElement>
+) {
   // We need direct user interaction to trigger playback, so we track whether
   // that's been achieved.
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
-
-  const [ddd, setDDD] = useState("z");
 
   // We define a total of three video components, and cycle between them.
   const videoRefs = [
@@ -92,25 +94,26 @@ function VideoCarousel({
     playFocusPlayer();
     setHasUserInteracted(true);
   };
-  const slideThreshold =
-    (videoRefs[0].current?.getBoundingClientRect().width ?? 200) / 2;
-  const swipeThreshold = 0.5; // Magic number
+
   const [isDragging, setIsDragging] = useState(false);
   const [xOffset, setXOffset] = useState(0);
   const handleDragEnd = ({ x, dx }: { x: number; dx: number }) => {
-    setDDD("xxxxx");
+    const swipeThreshold = 0.5; // Magic number
+    const slideThreshold =
+      (videoRefs[0].current?.getBoundingClientRect().width ?? 200) / 2;
+
     if (dx < -swipeThreshold) {
       // Handle quick swipe left
-      setIdx(idx + 1);
+      setIdx((idx) => idx + 1);
     } else if (dx > swipeThreshold) {
       // Handle quick swipe right
-      setIdx(idx - 1);
+      setIdx((idx) => idx - 1);
     } else if (x < -slideThreshold) {
       // Handle slow slide left
-      setIdx(idx + 1);
+      setIdx((idx) => idx + 1);
     } else if (x > slideThreshold) {
       // Handle slow slide right
-      setIdx(idx - 1);
+      setIdx((idx) => idx - 1);
     } else {
       setXOffset(0);
     }
@@ -124,7 +127,7 @@ function VideoCarousel({
   const throttledHandleDrag = throttle(handleDrag);
 
   return (
-    <div className={cx("video-carousel", className)} style={style}>
+    <div className={cx("video-carousel", className)} style={style} ref={ref}>
       <Draggable
         onDragStart={() => {
           handleUserInteraction();
@@ -148,12 +151,10 @@ function VideoCarousel({
             <video data-2 ref={videoRefs[2]} playsInline loop width="500" />
           </div>
         </div>
+        {!hasUserInteracted && <div className="placeholder" />}
       </Draggable>
-      <div className="fixed">
-        {idx} | {xOffset} | {isDragging ? "is" : "not"} | {ddd}
-      </div>
     </div>
   );
 }
 
-export default VideoCarousel;
+export default forwardRef(VideoCarousel);

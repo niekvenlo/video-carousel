@@ -23,11 +23,11 @@ function Draggable({
   const xOffset = useRef<number | null>(null);
   const ts = useRef<number>(Date.now());
 
-  const calcMovement = (pageX: number) => {
+  const calcMovement = useCallback((pageX: number) => {
     const x = pageX - xOffset.current!;
     const dx = Math.round((10 * x) / (Date.now() - ts.current)) / 10;
     return { x, dx };
-  };
+  }, []);
 
   const onDragStartCallback = useCallback(
     (event: DragEvent) => {
@@ -46,33 +46,41 @@ function Draggable({
     [onDragEnd]
   );
 
+  const onTouchStartCallback = useCallback(
+    (event: TouchEvent) => {
+      xOffset.current = event.touches[0].pageX;
+      ts.current = Date.now();
+      onDragStart();
+    },
+    [onDragStart]
+  );
+  const onTouchMoveCallback = useCallback(
+    (event: TouchEvent) => {
+      event.preventDefault();
+      onDrag(calcMovement(event.touches[0].pageX));
+    },
+    [onDrag]
+  );
+  const onTouchEndCallback = useCallback((event: TouchEvent) => {
+    onDragEnd(calcMovement(event.changedTouches[0].pageX));
+  }, []);
+
   return (
     <div className="draggable-layer-container">
       <div className="bottom-layer">{children}</div>
       <div
         {...restProps}
         className="top-layer"
+        draggable="true"
+        // Mouse support
         onDragStart={onDragStartCallback}
         onDragOver={onDragOverCallback}
         onDragEnd={onDragEndCallback}
-        draggable="true"
-        onTouchStart={(e) => {
-          xOffset.current = e.touches[0].pageX;
-          ts.current = Date.now();
-          onDragStart();
-        }}
-        onTouchMove={(e) => {
-          e.preventDefault();
-          onDrag(calcMovement(e.touches[0].pageX));
-        }}
-        onTouchEnd={(e) => {
-          e.preventDefault();
-          onDragEnd(calcMovement(e.changedTouches[0].pageX));
-        }}
-        onTouchCancel={(e) => {
-          e.preventDefault();
-          onDragEnd(calcMovement(e.touches[0].pageX));
-        }}
+        // Touch screen support
+        onTouchStart={onTouchStartCallback}
+        onTouchMove={onTouchMoveCallback}
+        onTouchEnd={onTouchEndCallback}
+        onTouchCancel={onTouchEndCallback}
       ></div>
     </div>
   );
