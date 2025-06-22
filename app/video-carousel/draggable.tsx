@@ -23,7 +23,6 @@ function Draggable({
   const xOffset = useRef<number | null>(null);
   const ts = useRef<number>(Date.now());
 
-  const [s, setS] = useState("ss");
   const calcMovement = (pageX: number) => {
     const x = pageX - xOffset.current!;
     const dx = Math.round((10 * x) / (Date.now() - ts.current)) / 10;
@@ -77,7 +76,6 @@ function Draggable({
           onDragEnd(calcMovement(e.touches[0].pageX));
         }}
       ></div>
-      {/* <div className="fixed">{s}</div> */}
     </div>
   );
 }
