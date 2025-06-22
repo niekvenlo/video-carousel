@@ -1,0 +1,13 @@
+.draggable-layer-container {
+  display: grid;
+
+  .top-layer,
+  .bottom-layer {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .bottom-layer {
+    pointer-events: none;
+  }
+}

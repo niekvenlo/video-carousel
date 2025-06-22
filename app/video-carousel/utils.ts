@@ -10,7 +10,9 @@ export function throttle(func: Function, timeout = 10) {
   };
 }
 
-export const cx = (...args: (string | { [k: string]: boolean })[]) => {
+export const cx = (
+  ...args: (string | { [k: string]: boolean } | undefined)[]
+) => {
   const classes: string[] = [];
   args.forEach((arg) => {
     if (typeof arg === "string") {
@@ -22,6 +24,9 @@ export const cx = (...args: (string | { [k: string]: boolean })[]) => {
           classes.push(k);
         }
       });
+    }
+    if (typeof arg === "undefined") {
+      // no-op
     }
   });
   return classes.join(" ");

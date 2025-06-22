@@ -1,21 +1,10 @@
 .video-carousel {
-  .layer-container {
-    display: grid;
-
-    .top-layer,
-    .bottom-layer {
-      grid-column: 1;
-      grid-row: 1;
-    }
-
-    .bottom-layer {
-      pointer-events: none;
-    }
-  }
-
+  width: 100dvw;
+  overflow: hidden;
   .video-players {
     display: grid;
-    width: 100vw;
+    width: 300%;
+    margin-left: -100%;
     grid-template-columns: 1fr 1fr 1fr;
     &.uno {
       grid-template-areas: "giraffe elephant zebra";
@@ -29,9 +18,6 @@
 
     user-select: none;
     will-change: translate;
-    & > div {
-      border: red 1px solid;
-    }
     .elephant {
       grid-area: elephant;
     }
@@ -42,4 +28,12 @@
       grid-area: giraffe;
     }
   }
+}
+
+.fixed {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  color: white;
+  background: red;
 }

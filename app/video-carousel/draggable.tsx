@@ -1,4 +1,12 @@
-import { useRef, type PropsWithChildren } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  type DragEvent,
+  type TouchEvent,
+  type PropsWithChildren,
+} from "react";
+import "./draggable.css";
 
 type RestProps = Record<string, any>;
 type Props = PropsWithChildren & {
@@ -14,31 +22,62 @@ function Draggable({
 }: Props) {
   const xOffset = useRef<number | null>(null);
   const ts = useRef<number>(Date.now());
+
+  const [s, setS] = useState("ss");
+  const calcMovement = (pageX: number) => {
+    const x = pageX - xOffset.current!;
+    const dx = Math.round((10 * x) / (Date.now() - ts.current)) / 10;
+    return { x, dx };
+  };
+
+  const onDragStartCallback = useCallback(
+    (event: DragEvent) => {
+      xOffset.current = event.pageX;
+      ts.current = Date.now();
+      onDragStart();
+    },
+    [onDragStart]
+  );
+  const onDragOverCallback = useCallback(
+    (event: DragEvent) => onDrag(calcMovement(event.pageX)),
+    [onDrag]
+  );
+  const onDragEndCallback = useCallback(
+    (event: DragEvent) => onDragEnd(calcMovement(event.pageX)),
+    [onDragEnd]
+  );
+
   return (
-    <div className="layer-container">
+    <div className="draggable-layer-container">
       <div className="bottom-layer">{children}</div>
       <div
         {...restProps}
         className="top-layer"
-        onDragStart={(e) => {
-          xOffset.current = e.pageX;
+        onDragStart={onDragStartCallback}
+        onDragOver={onDragOverCallback}
+        onDragEnd={onDragEndCallback}
+        draggable="true"
+        onTouchStart={(e) => {
+          xOffset.current = e.touches[0].pageX;
           ts.current = Date.now();
           onDragStart();
         }}
-        onDragEnd={(e) => {
-          const x = e.pageX - xOffset.current!;
-          const dx = Math.round((10 * x) / (Date.now() - ts.current)) / 10;
-          onDragEnd({ x, dx });
-        }}
-        onDragOver={(e) => {
-          const x = e.pageX - xOffset.current!;
-          const dx = Math.round((10 * x) / (Date.now() - ts.current)) / 10;
-          onDrag({ x, dx });
+        onTouchMove={(e) => {
           e.preventDefault();
-          e.dataTransfer.setDragImage(new Image(), 0, 0);
+          setS(`${e.touches[0].pageX}`);
+          onDrag(calcMovement(e.touches[0].pageX));
         }}
-        draggable="true"
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          setS("end");
+          onDragEnd(calcMovement(e.changedTouches[0].pageX));
+        }}
+        onTouchCancel={(e) => {
+          e.preventDefault();
+          onDragEnd(calcMovement(e.touches[0].pageX));
+        }}
       ></div>
+      {/* <div className="fixed">{s}</div> */}
     </div>
   );
 }

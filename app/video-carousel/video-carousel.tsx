@@ -1,60 +1,84 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Draggable from "./draggable";
+import usePrevious from "./hooks/use-previous";
 import { cx, throttle } from "./utils";
 import "./video-carousel.css";
 
 type Props = {
+  className?: string;
   loadVideoByIndex: (index: number, video: HTMLVideoElement) => void;
   startIndex?: number;
+  style?: CSSProperties;
 };
 
-function VideoCarousel({ loadVideoByIndex, startIndex = 0 }: Props) {
+function VideoCarousel({
+  className,
+  loadVideoByIndex,
+  startIndex = 0,
+  style,
+}: Props) {
+  // We need direct user interaction to trigger playback, so we track whether
+  // that's been achieved.
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
-  // We define a total of three video components.
-  const videoRef1 = useRef<HTMLVideoElement>(null);
-  const videoRef2 = useRef<HTMLVideoElement>(null);
-  const videoRef3 = useRef<HTMLVideoElement>(null);
-  const videoRefs = [videoRef1, videoRef2, videoRef3];
 
+  const [ddd, setDDD] = useState("z");
+
+  // We define a total of three video components, and cycle between them.
+  const videoRefs = [
+    useRef<HTMLVideoElement>(null),
+    useRef<HTMLVideoElement>(null),
+    useRef<HTMLVideoElement>(null),
+  ];
+
+  // Index defines our place in the carousel. At any time:
+  // - The previous player should display the video for the index - 1.
+  // - The focused player should display the video associated with the current index.
+  // - The next player should display the video for the index - 1.
   const [idx, setIdx] = useState(startIndex);
+  const previousIdx = usePrevious(idx);
+
   const getSafeIdx = (offset = 0) => (9 + idx + offset) % 3;
+
   // Derived state.
   const playerOrderingClass = ["uno", "dos", "tres"][getSafeIdx()];
-  console.log(getSafeIdx(-1), getSafeIdx(), getSafeIdx(1));
   const previousPlayer = videoRefs[getSafeIdx()];
   const focusPlayer = videoRefs[getSafeIdx(1)];
   const nextPlayer = videoRefs[getSafeIdx(2)];
-  console.log({
-    p: previousPlayer.current,
-    f: focusPlayer.current,
-    n: nextPlayer.current,
-  });
 
   useEffect(() => {
-    // On mount, we initialise three videos using `loadVideoByIndex`
-    loadVideoByIndex(idx - 1, videoRef1.current!);
-    loadVideoByIndex(idx, videoRef2.current!);
-    loadVideoByIndex(idx + 1, videoRef3.current!);
+    // On mount, we initialise a videos in each player.
+    loadVideoByIndex(idx - 1, previousPlayer.current!);
+    loadVideoByIndex(idx, focusPlayer.current!);
+    loadVideoByIndex(idx + 1, nextPlayer.current!);
     setIdx(startIndex);
-  }, [loadVideoByIndex, startIndex]);
+  }, [loadVideoByIndex, setIdx, startIndex]);
 
   useEffect(() => {
-    if (!hasUserInteracted) {
-      return;
-    }
     // Whenever idx changes, we move our attention to a different video.
     // We cancel any dragging, and move the players back to their initial location.
     setIsDragging(false);
     setXOffset(0);
     // And we play the video that is now front-and-center
-    playVideoAtCurrentIndex();
-    // loadVideoByIndex(idx + 1, videoRef3.current!);
+    if (hasUserInteracted) {
+      // We must not fire `.play` or `.pause` commands unless the user has interacted.
+      playFocusPlayer();
+    }
+    // And change the video that's currently loaded in the player that's moved.
+    if (previousIdx !== null) {
+      if (previousIdx < idx) {
+        loadVideoByIndex(idx + 1, nextPlayer.current!);
+      } else {
+        loadVideoByIndex(idx - 1, previousPlayer.current!);
+      }
+    }
+    if (previousIdx !== null && previousIdx < idx) {
+    }
   }, [idx]);
 
-  const playVideoAtCurrentIndex = () => {
-    videoRefs.forEach((ref) => ref.current?.pause());
-    const playIndex = (idx + 1) % 3;
-    videoRefs[playIndex].current?.play();
+  const playFocusPlayer = () => {
+    previousPlayer.current?.pause();
+    focusPlayer.current?.play();
+    nextPlayer.current?.pause();
   };
 
   const handleUserInteraction = () => {
@@ -65,27 +89,30 @@ function VideoCarousel({ loadVideoByIndex, startIndex = 0 }: Props) {
     // This initialises the players so we can later trigger them with code.
     videoRefs.forEach((ref) => ref.current?.play());
     videoRefs.forEach((ref) => ref.current?.pause());
-    playVideoAtCurrentIndex();
+    playFocusPlayer();
     setHasUserInteracted(true);
   };
   const slideThreshold =
-    (videoRef1.current?.getBoundingClientRect().width ?? 200) / 2;
-  const swipeThreshold = 0.5;
+    (videoRefs[0].current?.getBoundingClientRect().width ?? 200) / 2;
+  const swipeThreshold = 0.5; // Magic number
   const [isDragging, setIsDragging] = useState(false);
   const [xOffset, setXOffset] = useState(0);
   const handleDragEnd = ({ x, dx }: { x: number; dx: number }) => {
+    setDDD("xxxxx");
     if (dx < -swipeThreshold) {
       // Handle quick swipe left
       setIdx(idx + 1);
     } else if (dx > swipeThreshold) {
       // Handle quick swipe right
       setIdx(idx - 1);
-    } else if (x > slideThreshold) {
-      setIdx(idx - 1);
     } else if (x < -slideThreshold) {
+      // Handle slow slide left
       setIdx(idx + 1);
+    } else if (x > slideThreshold) {
+      // Handle slow slide right
+      setIdx(idx - 1);
     } else {
-      setXOffset(x);
+      setXOffset(0);
     }
   };
   const handleDrag = ({ x }: { x: number }) => {
@@ -97,7 +124,7 @@ function VideoCarousel({ loadVideoByIndex, startIndex = 0 }: Props) {
   const throttledHandleDrag = throttle(handleDrag);
 
   return (
-    <div className="video-carousel">
+    <div className={cx("video-carousel", className)} style={style}>
       <Draggable
         onDragStart={() => {
           handleUserInteraction();
@@ -112,16 +139,19 @@ function VideoCarousel({ loadVideoByIndex, startIndex = 0 }: Props) {
           style={{ translate: `${xOffset}px` }}
         >
           <div className="giraffe">
-            <video data-1 ref={videoRef1} playsInline loop width="500" />
+            <video data-1 ref={videoRefs[0]} playsInline loop width="500" />
           </div>
           <div className="elephant">
-            <video data-2 ref={videoRef2} playsInline loop width="500" />
+            <video data-2 ref={videoRefs[1]} playsInline loop width="500" />
           </div>
           <div className="zebra">
-            <video data-2 ref={videoRef3} playsInline loop width="500" />
+            <video data-2 ref={videoRefs[2]} playsInline loop width="500" />
           </div>
         </div>
       </Draggable>
+      <div className="fixed">
+        {idx} | {xOffset} | {isDragging ? "is" : "not"} | {ddd}
+      </div>
     </div>
   );
 }
