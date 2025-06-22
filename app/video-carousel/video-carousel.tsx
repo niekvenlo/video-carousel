@@ -17,7 +17,18 @@ function VideoCarousel({ loadVideoByIndex, startIndex = 0 }: Props) {
   const videoRefs = [videoRef1, videoRef2, videoRef3];
 
   const [idx, setIdx] = useState(startIndex);
-  const playerOrderingClass = ["uno", "dos", "tres"][idx % 3];
+  const getSafeIdx = (offset = 0) => (9 + idx + offset) % 3;
+  // Derived state.
+  const playerOrderingClass = ["uno", "dos", "tres"][getSafeIdx()];
+  console.log(getSafeIdx(-1), getSafeIdx(), getSafeIdx(1));
+  const previousPlayer = videoRefs[getSafeIdx()];
+  const focusPlayer = videoRefs[getSafeIdx(1)];
+  const nextPlayer = videoRefs[getSafeIdx(2)];
+  console.log({
+    p: previousPlayer.current,
+    f: focusPlayer.current,
+    n: nextPlayer.current,
+  });
 
   useEffect(() => {
     // On mount, we initialise three videos using `loadVideoByIndex`
@@ -41,9 +52,6 @@ function VideoCarousel({ loadVideoByIndex, startIndex = 0 }: Props) {
   }, [idx]);
 
   const playVideoAtCurrentIndex = () => {
-    if (videoRefs.some((ref) => !ref.current)) {
-      return;
-    }
     videoRefs.forEach((ref) => ref.current?.pause());
     const playIndex = (idx + 1) % 3;
     videoRefs[playIndex].current?.play();

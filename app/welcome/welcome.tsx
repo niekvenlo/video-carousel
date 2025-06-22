@@ -36,6 +36,7 @@ export function Welcome() {
         loadVideoByIndex={(index, video) => {
           video.src = `/nato/${tracks.at(index)}.MP4`;
         }}
+        startIndex={0}
       />
     </main>
   );
