@@ -63,12 +63,10 @@ function Draggable({
         }}
         onTouchMove={(e) => {
           e.preventDefault();
-          setS(`${e.touches[0].pageX}`);
           onDrag(calcMovement(e.touches[0].pageX));
         }}
         onTouchEnd={(e) => {
           e.preventDefault();
-          setS("end");
           onDragEnd(calcMovement(e.changedTouches[0].pageX));
         }}
         onTouchCancel={(e) => {
