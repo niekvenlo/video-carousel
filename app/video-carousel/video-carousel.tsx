@@ -7,8 +7,8 @@ import {
 } from "react";
 import Draggable from "./draggable";
 import useIndex from "./hooks/use-index";
-import useVideoCarousel, { type Role } from "./hooks/use-video-carousel";
-import { cx, getBoundedIdx, throttle } from "./utils";
+import useVideoCarousel, { type VideoLoader } from "./hooks/use-video-carousel";
+import { cx, throttle } from "./utils";
 import "./video-carousel.css";
 
 type Props = {
@@ -18,9 +18,9 @@ type Props = {
   // E.g. videojs(video.id);
   // TODO: Allow the carousel to the bounded by returning `null` from this function to
   // indicate the index is out-of-bounds.
-  loadVideoByIndex: (index: number, video: HTMLVideoElement) => void;
+  loadVideoByIndex: VideoLoader;
   // TODO: Check whether players re-render when startIndex changes.
-  loadOverlay?: (index: number) => ReactElement;
+  loadOverlay?: (dataset?: DOMStringMap) => ReactElement | null | undefined;
   startIndex?: number;
   // Allow you to override styling.
   className?: string;
@@ -35,10 +35,6 @@ function VideoCarousel(
   // that's been achieved.
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
-  // We define a total of three video components, and cycle between them.
-  const { videoRefs, getOrderingClass, getVideoPlayer, playVideoPlayer } =
-    useVideoCarousel();
-
   // Index defines our place in the carousel. At any time:
   // - The previous player should display the video for the index - 1.
   // - The focused player should display the video associated with the current index.
@@ -46,19 +42,9 @@ function VideoCarousel(
   const { currentIdx, previousIdx, decrementIdx, incrementIdx, setCurrentIdx } =
     useIndex(startIndex);
 
-  const loadVideo = (role: Role) => {
-    // Focus idx represents the index of the video component that is currently in focus.
-    const focusIdx = getBoundedIdx(currentIdx, { max: 3 });
-    if (role === "previous") {
-      loadVideoByIndex(currentIdx - 1, getVideoPlayer(focusIdx, role)!);
-    }
-    if (role === "focus") {
-      loadVideoByIndex(currentIdx, getVideoPlayer(focusIdx, role)!);
-    }
-    if (role === "next") {
-      loadVideoByIndex(currentIdx + 1, getVideoPlayer(focusIdx, role)!);
-    }
-  };
+  // We define a total of three video components, and cycle between them.
+  const { videoRefs, getOrderingClass, loadVideo, playFocusVideo } =
+    useVideoCarousel(loadVideoByIndex, currentIdx);
 
   useEffect(() => {
     // On mount, we initialise a videos in each player.
@@ -75,7 +61,7 @@ function VideoCarousel(
     // And we play the video that is now front-and-center.
     if (hasUserInteracted) {
       // We must not fire `.play` or `.pause` commands unless the user has interacted.
-      playVideoPlayer(currentIdx, "focus");
+      playFocusVideo(currentIdx);
     }
     setIsDragging(false);
     setXOffset(0);
@@ -94,9 +80,7 @@ function VideoCarousel(
     if (hasUserInteracted) {
       return;
     }
-    videoRefs.forEach(({ ref }) => ref.current?.play());
-    videoRefs.forEach(({ ref }) => ref.current?.pause());
-    playVideoPlayer(currentIdx, "focus");
+    playFocusVideo(currentIdx);
     setHasUserInteracted(true);
   };
 
@@ -145,7 +129,11 @@ function VideoCarousel(
         >
           {videoRefs.map(({ ref, key, id }) => (
             <div key={key}>
-              {loadOverlay && loadOverlay(currentIdx)}
+              {loadOverlay && (
+                <div className="overlay">
+                  {loadOverlay(ref.current?.dataset)}
+                </div>
+              )}
               <video id={id} ref={ref} playsInline loop width="500" />
             </div>
           ))}
