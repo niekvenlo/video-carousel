@@ -59,7 +59,6 @@ function Draggable({
   );
   const onTouchMoveCallback = useCallback(
     (event: TouchEvent) => {
-      event.preventDefault();
       onDrag(calcMovement(event.touches[0].pageX));
     },
     [onDrag]

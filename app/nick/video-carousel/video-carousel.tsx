@@ -64,7 +64,7 @@ function VideoCarousel(
       playFocusVideo(currentIdx);
     }
     setIsDragging(false);
-    setXOffset(0);
+    setDragOffset(0);
     if (currentIdx > previousIdx) {
       // We are incrementing the idx, so we should load the next video.
       loadVideo("next");
@@ -86,7 +86,7 @@ function VideoCarousel(
 
   // Handle dragging. There are much better libraries for this kind of thing.
   const [isDragging, setIsDragging] = useState(false);
-  const [xOffset, setXOffset] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
   const handleDragEnd = ({ x, dx }: { x: number; dx: number }) => {
     const swipeThreshold = 0.1; // Magic number
     const slideThreshold =
@@ -101,12 +101,12 @@ function VideoCarousel(
     } else if (isQuickSwipeRight || isSlowSlideRight) {
       decrementIdx();
     } else {
-      setXOffset(0);
+      setDragOffset(0);
     }
   };
   const handleDrag = ({ x }: { x: number }) => {
     if (isDragging) {
-      setXOffset(x);
+      setDragOffset(x);
       return;
     }
   };
@@ -121,11 +121,11 @@ function VideoCarousel(
         }}
         onDragEnd={handleDragEnd}
         onDrag={throttledHandleDrag}
-        onClick={handleUserInteraction}
+        onMouseDown={handleUserInteraction}
       >
         <div
           className={cx("video-players", getOrderingClass(currentIdx))}
-          style={{ translate: `${xOffset}px` }}
+          style={{ translate: `${dragOffset}px` }}
         >
           {videoRefs.map(({ ref, key, id }) => (
             <div key={key}>
