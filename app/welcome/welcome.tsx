@@ -36,6 +36,7 @@ export function Welcome() {
         loadVideoByIndex={(index, video) => {
           video.src = `/nato/${tracks.at(index)}.MP4`;
         }}
+        loadOverlay={(idx) => <p>{idx}</p>}
         startIndex={0}
       />
       {/* <VideoCarousel

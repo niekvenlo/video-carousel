@@ -31,3 +31,6 @@ export const cx = (
   });
   return classes.join(" ");
 };
+
+export const getBoundedIdx = (i: number, { max }: { max: number }) =>
+  (3 * max + i) % max;

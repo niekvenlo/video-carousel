@@ -4,29 +4,29 @@
   overflow: hidden;
   .video-players {
     display: grid;
-    width: 300%;
-    margin-left: -100%;
     grid-template-columns: 1fr 1fr 1fr;
-    &.uno {
-      grid-template-areas: "giraffe elephant zebra";
-    }
-    &.dos {
-      grid-template-areas: "elephant zebra giraffe";
-    }
-    &.tres {
-      grid-template-areas: "zebra giraffe elephant";
-    }
-
+    margin-left: -100%;
     user-select: none;
+    width: 300%;
     will-change: translate;
-    .elephant {
-      grid-area: elephant;
+
+    &.a-b-c {
+      grid-template-areas: "a b c";
     }
-    .zebra {
-      grid-area: zebra;
+    &.b-c-a {
+      grid-template-areas: "b c a";
     }
-    .giraffe {
-      grid-area: giraffe;
+    &.c-a-b {
+      grid-template-areas: "c a b";
+    }
+    div:nth-of-type(1) {
+      grid-area: a;
+    }
+    div:nth-of-type(2) {
+      grid-area: b;
+    }
+    div:nth-of-type(3) {
+      grid-area: c;
     }
   }
   .placeholder {
