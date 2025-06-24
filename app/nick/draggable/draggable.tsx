@@ -1,7 +1,6 @@
 import {
   useCallback,
   useRef,
-  useState,
   type DragEvent,
   type TouchEvent,
   type PropsWithChildren,
@@ -33,12 +32,16 @@ function Draggable({
     (event: DragEvent) => {
       xOffset.current = event.pageX;
       ts.current = Date.now();
+      event.dataTransfer.setDragImage(new Image(), 10, 10);
       onDragStart();
     },
     [onDragStart]
   );
   const onDragOverCallback = useCallback(
-    (event: DragEvent) => onDrag(calcMovement(event.pageX)),
+    (event: DragEvent) => {
+      event.preventDefault();
+      onDrag(calcMovement(event.pageX));
+    },
     [onDrag]
   );
   const onDragEndCallback = useCallback(
