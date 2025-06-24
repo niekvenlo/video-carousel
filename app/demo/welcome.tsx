@@ -1,4 +1,4 @@
-import VideoCarousel from "../video-carousel/video-carousel.js";
+import VideoCarousel from "../nick/video-carousel/video-carousel.js";
 
 const tracks = [
   `Alpha`,
@@ -29,7 +29,7 @@ const tracks = [
   `Zulu`,
 ];
 
-export function Welcome() {
+export function Demo() {
   return (
     <main>
       <VideoCarousel
@@ -70,7 +70,7 @@ export function Welcome() {
               style={{
                 padding: "10vmin",
                 flexGrow: 1,
-                background: "purple",
+                background: "#ddeeff99",
                 fontSize: "14px",
                 alignContent: "center",
               }}

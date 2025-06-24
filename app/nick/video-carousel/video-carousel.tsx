@@ -5,10 +5,10 @@ import {
   type CSSProperties,
   type ReactElement,
 } from "react";
-import Draggable from "../nick/draggable/draggable";
-import useIndex from "../nick/utilityHooks/use-index";
+import Draggable from "../draggable/draggable";
+import useIndex from "../utilityHooks/use-index";
 import useVideoCarousel, { type VideoLoader } from "./use-video-carousel";
-import { cx, throttle } from "../nick/utils";
+import { cx, throttle } from "../utils";
 import "./video-carousel.css";
 
 type Props = {
