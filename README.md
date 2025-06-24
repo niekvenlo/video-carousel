@@ -1,87 +1,67 @@
-# Welcome to React Router!
+## VideoCarousel for React
 
-A modern, production-ready template for building full-stack React applications using React Router.
+This is a proof of concept implementation of a video carousel player.
+It uses three video players, and reuses them to play any number of videos.
+At any moment you'll only see a single video, but you can swipe forward and backward to navigate between the videos.
+This demo has been tested on:
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
-
-## Features
-
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-
-## Getting Started
+- Safari and Chrome on iOS on mobile.
+- Safari and Chrome on macOS.
 
 ### Installation
 
-Install the dependencies:
+As usual,
 
 ```bash
-npm install
+npm  install
 ```
-
-### Development
-
-Start the development server with HMR:
 
 ```bash
-npm run dev
+npm  run  dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Your application will be available at `http://localhost:3006`. Note the port number.
 
-## Building for Production
+### Usage
 
-Create a production build:
-
-```bash
-npm run build
+```jsx
+<VideoCarousel
+  width={500}
+  height={888}
+  startIndex={0} // Defaults to zero.
+  loadVideoByIndex={(index, video) => {
+    // Each video in the carousel will be identified by index. Use
+    // the index to decide which video to load.
+    // You have access to the internal video DOM element here, so you
+    // can load your video however you like.
+    // E.g. video.src = '/yourfile.mp4';
+    // E.g. hls.attachMedia(video);
+    // E.g. videojs(video.id);
+    video.src = `/nato/${tracks.at(index % tracks.length)}.MP4`;
+    // You can also add meta data to the video component. This will
+    // be accessible in the `loadOverlay` function.
+    video.dataset.id = `${index}`;
+    video.dataset.name = tracks.at(index % tracks.length);
+  }}
+  loadOverlay={(dataset) =>
+    // You can render an overlay component over each video.
+    // If you have attached meta data to the video component in
+    // `loadVideoByIndex` you can access it here.
+    dataset && (
+      <div
+        style={{
+          padding: "10vmin",
+          flexGrow: 1,
+          backgroundImage: "linear-gradient(0deg, #332195FF 0%, #71C4FF33 20%)",
+          fontSize: "4vmin",
+          alignContent: "flex-end",
+        }}
+      >
+        <p>
+          This is the video with index #{dataset?.id}, called "{dataset?.name}"
+        </p>
+      </div>
+    )
+  }
+/>
 ```
-
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.

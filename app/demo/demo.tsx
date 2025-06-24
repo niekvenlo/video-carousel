@@ -36,9 +36,9 @@ export function Demo() {
         width={500}
         height={888}
         loadVideoByIndex={(index, video) => {
-          video.src = `/nato/${tracks.at(index)}.MP4`;
+          video.src = `/nato/${tracks.at(index % tracks.length)}.MP4`;
           video.dataset.id = `${index}`;
-          video.dataset.name = tracks.at(index);
+          video.dataset.name = tracks.at(index % tracks.length);
         }}
         loadOverlay={(dataset) =>
           dataset && (
@@ -65,8 +65,8 @@ export function Demo() {
         width={250}
         height={444}
         loadVideoByIndex={(index, video) => {
-          video.src = `/nato/${tracks.at(index)}.MP4`;
-          video.dataset.name = tracks.at(index);
+          video.src = `/nato/${tracks.at(index % tracks.length)}.MP4`;
+          video.dataset.name = tracks.at(index % tracks.length);
         }}
         loadOverlay={(dataset) =>
           dataset && (
