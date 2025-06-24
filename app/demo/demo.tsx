@@ -33,6 +33,8 @@ export function Demo() {
   return (
     <main>
       <VideoCarousel
+        width={500}
+        height={888}
         loadVideoByIndex={(index, video) => {
           video.src = `/nato/${tracks.at(index)}.MP4`;
           video.dataset.id = `${index}`;
@@ -60,6 +62,8 @@ export function Demo() {
         startIndex={0}
       />
       <VideoCarousel
+        width={250}
+        height={444}
         loadVideoByIndex={(index, video) => {
           video.src = `/nato/${tracks.at(index)}.MP4`;
           video.dataset.name = tracks.at(index);
@@ -80,7 +84,6 @@ export function Demo() {
           )
         }
         startIndex={0}
-        style={{ width: "100px" }}
       />
     </main>
   );

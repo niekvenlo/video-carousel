@@ -12,6 +12,8 @@ import { cx, throttle } from "../utils";
 import "./video-carousel.css";
 
 type Props = {
+  height: number;
+  width: number;
   // We pass the video component to you, so you can attach your video src however you like.
   // E.g. video.src = '/yourfile.mp4';
   // E.g. hls.attachMedia(video);
@@ -28,7 +30,15 @@ type Props = {
 };
 
 function VideoCarousel(
-  { className, loadVideoByIndex, loadOverlay, startIndex = 0, style }: Props,
+  {
+    className,
+    height,
+    loadVideoByIndex,
+    loadOverlay,
+    startIndex = 0,
+    style,
+    width,
+  }: Props,
   ref: React.Ref<HTMLDivElement>
 ) {
   // We need direct user interaction to trigger playback, so we track whether
@@ -113,7 +123,11 @@ function VideoCarousel(
   const throttledHandleDrag = throttle(handleDrag);
 
   return (
-    <div className={cx("video-carousel", className)} style={style} ref={ref}>
+    <div
+      className={cx("video-carousel", className)}
+      style={{ ...style, width: width }}
+      ref={ref}
+    >
       <Draggable
         onDragStart={() => {
           handleUserInteraction();
@@ -134,7 +148,14 @@ function VideoCarousel(
                   {loadOverlay(ref.current?.dataset)}
                 </div>
               )}
-              <video id={id} ref={ref} playsInline loop width="500" />
+              <video
+                id={id}
+                ref={ref}
+                playsInline
+                loop
+                height={height}
+                width={width}
+              />
             </div>
           ))}
         </div>
